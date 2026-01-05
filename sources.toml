@@ -37,3 +37,9 @@ source = "github"
 github = "envoyproxy/gateway"
 use_latest_release = true
 prefix = "v"
+
+[alloy]
+source = "github"
+github = "grafana/alloy"
+use_latest_release = true
+prefix = "v"
