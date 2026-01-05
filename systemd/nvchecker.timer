@@ -1,9 +1,0 @@
-[Unit]
-Description=Run nvchecker every hour
-
-[Timer]
-OnActiveSec=1min
-OnCalendar=hourly
-
-[Install]
-WantedBy=timers.target

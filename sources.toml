@@ -3,321 +3,37 @@ oldver = "old.json"
 newver = "new.json"
 keyfile = "keys.toml"
 
-[Autoruns]
-source = 'regex'
-regex = 'Autoruns v([\d.]+)'
-url = 'https://raw.githubusercontent.com/MicrosoftDocs/sysinternals/live/sysinternals/downloads/autoruns.md'
+["golang1.25"]
+source = "container"
+registry = "docker.io"
+container = "library/golang"
+include_regex = "1.25.*-alpine"
 
-[CrystalDiskInfo]
-source = 'regex'
-regex = '<title><!\[CDATA\[/([\d.]+)/'
-url = 'https://sourceforge.net/projects/crystaldiskinfo/rss?path=/'
+["kong-gateway3.10"]
+source = "container"
+registry = "docker.io"
+container = "kong/kong-gateway"
+include_regex = "3.10.*"
 
-[Discord_Linux]
-source = 'httpheader'
-regex = '/discord-([\d.]+)\.tar\.gz$'
-url = 'https://discord.com/api/download?platform=linux&format=tar.gz'
+["n8n"]
+source = "container"
+registry = "docker.io"
+container = "n8nio/n8n"
+include_regex = "2.*-amd64"
 
-[DisplayDriverUninstaller]
-source = 'regex'
-regex = '^([\d.]+)$'
-url = 'https://www.wagnardsoft.com/DDU/currentversion2.txt'
+[node_exporter]
+source = "github"
+github = "prometheus/node_exporter"
+use_latest_release = true
 
-[ExeInfoPE]
-source = "regex"
-regex = "Version[\\s\\t]*:[\\s\\t]*([\\d.]+)"
-url = "https://raw.githubusercontent.com/ExeinfoASL/ASL/master/file_id.diz"
+[envoy]
+source = "github"
+github = "envoyproxy/envoy"
+use_latest_release = true
+prefix = "v"
 
-[GPU-Z]
-# dependencies: jq (and Python bindings for jq: https://pypi.org/project/jq/)
-source = 'jq'
-filter = '.latest'
-include_regex = '^[\d.]+$'
-url = 'https://www.gpu-z.com/gpuz/version_v2'
-
-[HWiNFO]
-source = "regex"
-regex = "(?:\\r\\n){2}HW64UPD:([\\d.]+)"
-url = "https://www.hwinfo.com/ver.txt"
-
-[HWMonitor]
-source = 'regex'
-regex = 'hwmonitor=([\d.]+);'
-from_pattern = '^(\d)\.(\d)\.(\d)\.\d$'
-to_pattern = '\1.\2\3'
-url = 'https://download.cpuid.com/cpuid.ver'
-
-[IRPF_2022]
-source = "regex"
-regex = "<pkgver>([\\d.]+)</pkgver>"
-url = "https://downloadirpf.receita.fazenda.gov.br/irpf/2022/irpf/update/latest.xml"
-
-[IRPF_2022_XMLs]
-# dependencies: coreutils, curl, xmlstarlet
-source = "cmd"
-cmd = """
-if res=$(curl -fsS 'https://downloadirpf.receita.fazenda.gov.br/irpf/2022/irpf/update/latest.xml')
-then
-  if xml=$(echo "${res}" | xmlstarlet sel -B -t -c '//information/extra/files')
-  then
-    echo -n "${xml}" | sha256sum | head -c 8
-  else
-    exit $?
-  fi
-else
-  exit $?
-fi
-"""
-
-[IRPF_2023]
-source = "regex"
-regex = "<pkgver>([\\d.]+)</pkgver>"
-url = "https://downloadirpf.receita.fazenda.gov.br/irpf/2023/irpf/update/latest.xml"
-
-[IRPF_2023_XMLs]
-# dependencies: coreutils, curl, xmlstarlet
-source = "cmd"
-cmd = """
-if res=$(curl -fsS 'https://downloadirpf.receita.fazenda.gov.br/irpf/2023/irpf/update/latest.xml')
-then
-  if xml=$(echo "${res}" | xmlstarlet sel -B -t -c '//information/extra/files')
-  then
-    echo -n "${xml}" | sha256sum | head -c 8
-  else
-    exit $?
-  fi
-else
-  exit $?
-fi
-"""
-
-[IRPF_2024]
-source = "regex"
-regex = "<pkgver>([\\d.]+)</pkgver>"
-url = "https://downloadirpf.receita.fazenda.gov.br/irpf/2024/irpf/update/latest.xml"
-
-[IRPF_2024_XMLs]
-# dependencies: coreutils, curl, xmlstarlet
-source = "cmd"
-cmd = """
-if res=$(curl -fsS 'https://downloadirpf.receita.fazenda.gov.br/irpf/2024/irpf/update/latest.xml')
-then
-  if xml=$(echo "${res}" | xmlstarlet sel -B -t -c '//information/extra/files')
-  then
-    echo -n "${xml}" | sha256sum | head -c 8
-  else
-    exit $?
-  fi
-else
-  exit $?
-fi
-"""
-
-[IRPF_2025]
-source = "regex"
-regex = "<pkgver>([\\d.]+)</pkgver>"
-url = "https://downloadirpf.receita.fazenda.gov.br/irpf/2025/irpf/update/latest.xml"
-
-[IRPF_2025_XMLs]
-# dependencies: coreutils, curl, xmlstarlet
-source = "cmd"
-cmd = """
-if res=$(curl -fsS 'https://downloadirpf.receita.fazenda.gov.br/irpf/2025/irpf/update/latest.xml')
-then
-  if xml=$(echo "${res}" | xmlstarlet sel -B -t -c '//information/extra/files')
-  then
-    echo -n "${xml}" | sha256sum | head -c 8
-  else
-    exit $?
-  fi
-else
-  exit $?
-fi
-"""
-
-[IRPF_Latest]
-source = 'regex'
-regex = '/arquivos/IRPF(\d+-[\d.]+)\.zip'
-url = 'https://www.gov.br/receitafederal/pt-br/centrais-de-conteudo/download/pgd/dirpf'
-verify_cert = false
-
-[KeyCastOW]
-source = "regex"
-encoding = "utf16"
-regex = "\"FileVersion\", \"([\\d.]+)\""
-url = "https://raw.githubusercontent.com/brookhong/KeyCastOW/master/keycastow.rc"
-
-[LiveTcpUdpWatch]
-source = "regex"
-regex = "LiveTcpUdpWatch v([\\d.]+)"
-url = "https://www.nirsoft.net/utils/live_tcp_udp_watch.html"
-
-[NVIDIA_470]
-# Linux drivers (R470 Legacy branch)
-source = 'jq'
-filter = '[.IDS[] | .downloadInfo | select(.IsRecommended == "1")][0].DisplayVersion'
-include_regex = '^[\d.]+$'
-# Query parameters:
-# - psid (Product Series): 85 (GeForce 600 Series)
-# - pfid (Product): 660 (GeForce GTX 660)
-# - osID (Operating System): 12 (Linux 64-bit)
-# - languageCode: 1033 (English (US))
-# - beta (Beta branch): 0 (false)
-# - isWHQL (Production branch): 1 (true)
-# - dltype (Unknown): -1 (unknown)
-# - dch (Windows-specific, DCH branch): 0 (false)
-# - upCRD (Windows-specific, Creator Ready Driver branch): 0 (false)
-# - qnf (New Feature branch): 0 (false)
-# - ctk (CUDA Toolkit): null // it was previously '0' (false), but it started failing as of 2025-09-27
-# - sort1 (Unknown, hardcoded): 1 (unknown)
-# - numberOfResults: 1
-url = 'https://gfwsl.geforce.com/services_toolkit/services/com/nvidia/services/AjaxDriverService.php?func=DriverManualLookup&psid=85&pfid=660&osID=12&languageCode=1033&beta=0&isWHQL=1&dltype=-1&dhc=0&upCRD=0&qnf=0&ctk=null&sort1=1&numberOfResults=1'
-
-[NVIDIA_580]
-# Linux drivers (R580 Legacy branch)
-source = 'jq'
-filter = '[.IDS[] | .downloadInfo | select(.IsRecommended == "1")][0].DisplayVersion'
-include_regex = '^[\d.]+$'
-# Query parameters:
-# - psid (Product Series): 101 (GeForce 10 Series)
-# - pfid (Product): 825 (GeForce GTX 1050 Ti)
-# - osID (Operating System): 12 (Linux 64-bit)
-# - languageCode: 1033 (English (US))
-# - beta (Beta branch): 0 (false)
-# - isWHQL (Production branch): 1 (true)
-# - dltype (Unknown): -1 (unknown)
-# - dch (Windows-specific, DCH branch): 0 (false)
-# - upCRD (Windows-specific, Creator Ready Driver branch): 0 (false)
-# - qnf (New Feature branch): 0 (false)
-# - ctk (CUDA Toolkit): null // it was previously '0' (false), but it started failing as of 2025-09-27
-# - sort1 (Unknown, hardcoded): 1 (unknown)
-# - numberOfResults: 1
-url = 'https://gfwsl.geforce.com/services_toolkit/services/com/nvidia/services/AjaxDriverService.php?func=DriverManualLookup&psid=101&pfid=825&osID=12&languageCode=1033&beta=0&isWHQL=1&dltype=-1&dhc=0&upCRD=0&qnf=0&ctk=null&sort1=1&numberOfResults=1'
-
-[NVIDIA_Production]
-# Linux drivers (Production branch)
-source = 'jq'
-filter = '[.IDS[] | .downloadInfo | select(.IsRecommended == "1")][0].DisplayVersion'
-include_regex = '^[\d.]+$'
-# Query parameters:
-# - psid (Product Series): 131 (GeForce RTX 50 Series)
-# - pfid (Product): 1066 (NVIDIA GeForce RTX 5090)
-# - osID (Operating System): 12 (Linux 64-bit)
-# - languageCode: 1033 (English (US))
-# - beta (Beta branch): 0 (false)
-# - isWHQL (Production branch): 1 (true)
-# - dltype (Unknown): -1 (unknown)
-# - dch (Windows-specific, DCH branch): 0 (false)
-# - upCRD (Windows-specific, Creator Ready Driver branch): 0 (false)
-# - qnf (New Feature branch): 0 (false)
-# - ctk (CUDA Toolkit): null // it was previously '0' (false), but it started failing as of 2025-09-27
-# - sort1 (Unknown, hardcoded): 1 (unknown)
-# - numberOfResults: 1
-url = 'https://gfwsl.geforce.com/services_toolkit/services/com/nvidia/services/AjaxDriverService.php?func=DriverManualLookup&psid=131&pfid=1066&osID=12&languageCode=1033&beta=0&isWHQL=1&dltype=-1&dhc=0&upCRD=0&qnf=0&ctk=null&sort1=1&numberOfResults=1'
-
-[NVIDIA_Latest]
-# Linux drivers (New Feature branch)
-source = 'jq'
-filter = '[.IDS[] | .downloadInfo | select(.IsFeaturePreview == "1")][0].DisplayVersion'
-include_regex = '^[\d.]+$'
-# Query parameters:
-# - psid (Product Series): 131 (GeForce RTX 50 Series)
-# - pfid (Product): 1066 (NVIDIA GeForce RTX 5090)
-# - osID (Operating System): 12 (Linux 64-bit)
-# - languageCode: 1033 (English (US))
-# - beta (Beta branch): 0 (false)
-# - isWHQL (Production branch): 0 (false)
-# - dltype (Unknown): -1 (unknown)
-# - dch (Windows-specific, DCH branch): 0 (false)
-# - upCRD (Windows-specific, Creator Ready Driver branch): 0 (false)
-# - qnf (New Feature branch): 1 (true)
-# - ctk (CUDA Toolkit): null // it was previously '0' (false), but it started failing as of 2025-09-27
-# - sort1 (Unknown, hardcoded): 1 (unknown)
-# - numberOfResults: 1
-url = 'https://gfwsl.geforce.com/services_toolkit/services/com/nvidia/services/AjaxDriverService.php?func=DriverManualLookup&psid=131&pfid=1066&osID=12&languageCode=1033&beta=0&isWHQL=0&dltype=-1&dhc=0&upCRD=0&qnf=1&ctk=null&sort1=1&numberOfResults=1'
-
-[NVIDIA_Beta]
-# Linux drivers (Beta branch)
-source = 'jq'
-filter = '[.IDS[] | .downloadInfo | select(.IsBeta == "1")][0].DisplayVersion'
-include_regex = '^[\d.]+$'
-# Query parameters:
-# - psid (Product Series): 131 (GeForce RTX 50 Series)
-# - pfid (Product): 1066 (NVIDIA GeForce RTX 5090)
-# - osID (Operating System): 12 (Linux 64-bit)
-# - languageCode: 1033 (English (US))
-# - beta (Beta branch): 1 (true)
-# - isWHQL (Production branch): 0 (false)
-# - dltype (Unknown): -1 (unknown)
-# - dch (Windows-specific, DCH branch): 0 (false)
-# - upCRD (Windows-specific, Creator Ready Driver branch): 0 (false)
-# - qnf (New Feature branch): 0 (false)
-# - ctk (CUDA Toolkit): null // it was previously '0' (false), but it started failing as of 2025-09-27
-# - sort1 (Unknown, hardcoded): 1 (unknown)
-# - numberOfResults: 1
-url = 'https://gfwsl.geforce.com/services_toolkit/services/com/nvidia/services/AjaxDriverService.php?func=DriverManualLookup&psid=131&pfid=1066&osID=12&languageCode=1033&beta=1&isWHQL=0&dltype=-1&dhc=0&upCRD=0&qnf=0&ctk=null&sort1=1&numberOfResults=1'
-
-[NVIDIA_CUDA]
-source = 'regex'
-regex = 'nvidia_driver-linux-x86_64-([\d.]+)-archive'
-url = 'https://developer.download.nvidia.com/compute/cuda/redist/nvidia_driver/linux-x86_64/'
-
-[NVIDIA_Tesla]
-source = 'regex'
-regex = 'Version ([\d.]+)\(Linux\)'
-url = 'https://docs.nvidia.com/datacenter/tesla/index.html'
-
-[NVIDIA_Vulkan]
-source = "regex"
-regex = "<b>Linux ([0-9.]+)</b>"
-url = "https://developer.nvidia.com/vulkan-driver"
-
-[ProcessExplorer]
-source = "regex"
-regex = "Process Explorer v([\\d.]+)"
-url = "https://raw.githubusercontent.com/MicrosoftDocs/sysinternals/live/sysinternals/downloads/process-explorer.md"
-
-[ProcessMonitor]
-source = "regex"
-regex = "Process Monitor v([\\d.]+)"
-url = "https://raw.githubusercontent.com/MicrosoftDocs/sysinternals/live/sysinternals/downloads/procmon.md"
-
-[TeamViewerLinux]
-source = "httpheader"
-regex = "teamviewer_([0-9.]+)_amd64\\.deb$"
-url = "https://download.teamviewer.com/download/linux/teamviewer_amd64.deb"
-
-[UnifiedRemoteServer]
-source = "httpheader"
-regex = "urserver-([0-9.]+)\\.deb$"
-url = "https://www.unifiedremote.com/download/linux-x64-deb"
-
-[USBDeview]
-source = "regex"
-regex = "USBDeview v([\\d.]+)"
-url = "https://www.nirsoft.net/utils/usb_devices_view.html"
-
-[vibranceGUI]
-source = "regex"
-regex = "AssemblyVersion\\(\"([\\d.]+)\"\\)"
-url = "https://raw.githubusercontent.com/juv/vibranceGUI/master/vibrance.GUI/Properties/AssemblyInfo.cs"
-
-[Windows10]
-source = 'regex'
-regex = '<h2>Windows 10 .+? Update \| Version (.+?)</h2>'
-url = 'https://www.microsoft.com/en-us/software-download/windows10ISO'
-
-[Windows11]
-source = 'regex'
-regex = '\(Current release: Windows 11 .+? Version ([^)]+)\)'
-url = 'https://www.microsoft.com/en-us/software-download/windows11'
-
-[WinRAR]
-source = "regex"
-regex = "Version ([\\d.]+)[\\r\\n]"
-url = "https://www.rarlab.com/rarnew.htm"
-
-[WizTree]
-source = 'regex'
-regex = 'VERSION=([\d.]+)'
-url = 'https://antibody-software.com/files/wiztreeversion.php'
+[envoy_gateway]
+source = "github"
+github = "envoyproxy/gateway"
+use_latest_release = true
+prefix = "v"
