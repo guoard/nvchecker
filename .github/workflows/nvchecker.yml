@@ -133,9 +133,9 @@ jobs:
                 --arg title "nvchecker: $entry $new_version" \
                 --arg body "$pr_body" \
                 --arg head "$branch_name" \
-                --arg base "main" \
+                --arg base "master" \
                 '{title: $title, body: $body, head: $head, base: $base}')"
             
             # Return to main for the next iteration
-            git checkout main
+            git checkout master
           done
