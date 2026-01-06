@@ -79,15 +79,12 @@ jobs:
         if: steps.results.outputs.outdated_count > 0
         run: |
           set -eux
-          # Temporarily store the new versions to read from while we reset the workspace for branches
-          cp -v '${{ steps.vars.outputs.newver }}' '${{ steps.vars.outputs.newver }}~'
-          git restore '${{ steps.vars.outputs.newver }}'
 
           # Iterate through each outdated entry
           echo '${{ steps.results.outputs.outdated_entries_json }}' | jq -r '.[]' | while read -r entry; do
             old_version=$(jq -r ".data[\"$entry\"].version" '${{ steps.vars.outputs.oldver }}')
-            new_version=$(jq -r ".data[\"$entry\"].version" '${{ steps.vars.outputs.newver }}~')
-            release_url=$(jq -r ".data[\"$entry\"].url // empty" '${{ steps.vars.outputs.newver }}~')
+            new_version=$(jq -r ".data[\"$entry\"].version" '${{ steps.vars.outputs.newver }}')
+            release_url=$(jq -r ".data[\"$entry\"].url // empty" '${{ steps.vars.outputs.newver }}')
 
             branch_name="update-${entry}-${new_version}"
 
@@ -99,14 +96,13 @@ jobs:
             git switch "${{ github.head_ref || github.ref_name }}"
             git switch --create "$branch_name"
 
-            # Update the specific entry in oldver and newver files
-            jq --argjson obj "$(jq ".data[\"$entry\"]" "${{ steps.vars.outputs.newver }}~")" \
+            # Update the specific entry in oldver file
+            jq --argjson obj "$(jq ".data[\"$entry\"]" "${{ steps.vars.outputs.newver }}")" \
               ".data[\"$entry\"] = \$obj" \
-              "${{ steps.vars.outputs.newver }}" > tmp.json \
-            && mv tmp.json "${{ steps.vars.outputs.newver }}"
-            cp '${{ steps.vars.outputs.newver }}' '${{ steps.vars.outputs.oldver }}'
+              "${{ steps.vars.outputs.oldver }}" > tmp.json \
+            && mv tmp.json "${{ steps.vars.outputs.oldver }}"
 
-            git add '${{ steps.vars.outputs.oldver }}' '${{ steps.vars.outputs.newver }}'
+            git add '${{ steps.vars.outputs.oldver }}'
             git commit -m "nvchecker: $entry $old_version -> $new_version"
             git push --set-upstream origin "$branch_name"
 
