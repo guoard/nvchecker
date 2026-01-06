@@ -39,10 +39,10 @@ jobs:
             exit 0
           fi
           echo '[keys]' > '${{ steps.vars.outputs.keyfile }}'
-          if [ -n '${{ secrets.API_KEY_GITHUB }}' ]
+          if [ -n '${{ secrets.GITHUB_TOKEN }}' ]
           then
             echo '[keys]' > '${{ steps.vars.outputs.keyfile }}'
-            echo 'github = "${{ secrets.API_KEY_GITHUB }}"' >> '${{ steps.vars.outputs.keyfile }}'
+            echo 'github = "${{ secrets.GITHUB_TOKEN }}"' >> '${{ steps.vars.outputs.keyfile }}'
             echo 'Added GitHub API key to nvchecker key file.'
           else
             echo '::warning::GitHub Secret for GitHub API key is not set up!'
