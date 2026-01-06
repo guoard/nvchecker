@@ -17,15 +17,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install system dependencies
-        run: |
-          set -e
-          sudo apt-get update
-          sudo apt-get install -y \
-            python3-pip \
-            jq \
-            git \
-            curl
+      # - name: Install system dependencies
+      #   run: |
+      #     set -e
+      #     sudo apt-get update
+      #     sudo apt-get install -y \
+      #       python3-pip \
+      #       jq \
+      #       git \
+      #       curl
 
       - name: Install nvchecker
         run: |
