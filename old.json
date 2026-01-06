@@ -2,7 +2,7 @@
   "version": 2,
   "data": {
     "envoy": {
-      "version": "1.36.3",
+      "version": "1.36.4",
       "gitref": "refs/tags/v1.36.3",
       "url": "https://github.com/envoyproxy/envoy/releases/tag/v1.36.3"
     },
