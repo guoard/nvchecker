@@ -2,9 +2,9 @@
   "version": 2,
   "data": {
     "envoy": {
-      "version": "1.36.4",
-      "gitref": "refs/tags/v1.36.4",
-      "url": "https://github.com/envoyproxy/envoy/releases/tag/v1.36.4"
+      "version": "1.36.3",
+      "gitref": "refs/tags/v1.36.3",
+      "url": "https://github.com/envoyproxy/envoy/releases/tag/v1.36.3"
     },
     "envoy_gateway": {
       "version": "1.6.1",
@@ -12,12 +12,12 @@
       "url": "https://github.com/envoyproxy/gateway/releases/tag/v1.6.1"
     },
     "n8n": {
-      "version": "2.3.0-amd64"
+      "version": "2.3.1-amd64"
     },
     "node_exporter": {
-      "version": "v1.10.2",
-      "gitref": "refs/tags/v1.10.2",
-      "url": "https://github.com/prometheus/node_exporter/releases/tag/v1.10.2"
+      "version": "v1.10.1",
+      "gitref": "refs/tags/v1.10.1",
+      "url": "https://github.com/prometheus/node_exporter/releases/tag/v1.10.1"
     }
   }
 }
