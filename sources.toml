@@ -1,25 +1,25 @@
 [__config__]
 oldver = "old.json"
 newver = "new.json"
-keyfile = "keys.toml"
+# keyfile = "keys.toml"
 
-["golang1.25"]
-source = "container"
-registry = "docker.io"
-container = "library/golang"
-include_regex = "1.25.*-alpine"
+# ["golang1.25"]
+# source = "container"
+# registry = "docker.io"
+# container = "library/golang"
+# include_regex = "1.25.*-alpine"
 
-["kong-gateway3.10"]
-source = "container"
-registry = "docker.io"
-container = "kong/kong-gateway"
-include_regex = "3.10.*"
+# ["kong-gateway3.10"]
+# source = "container"
+# registry = "docker.io"
+# container = "kong/kong-gateway"
+# include_regex = "3.10.*"
 
-["n8n"]
-source = "container"
-registry = "docker.io"
-container = "n8nio/n8n"
-include_regex = "2.*-amd64"
+# ["n8n"]
+# source = "container"
+# registry = "docker.io"
+# container = "n8nio/n8n"
+# include_regex = "2.*-amd64"
 
 [node_exporter]
 source = "github"
@@ -32,14 +32,14 @@ github = "envoyproxy/envoy"
 use_latest_release = true
 prefix = "v"
 
-[envoy_gateway]
-source = "github"
-github = "envoyproxy/gateway"
-use_latest_release = true
-prefix = "v"
+# [envoy_gateway]
+# source = "github"
+# github = "envoyproxy/gateway"
+# use_latest_release = true
+# prefix = "v"
 
-[alloy]
-source = "github"
-github = "grafana/alloy"
-use_latest_release = true
-prefix = "v"
+# [alloy]
+# source = "github"
+# github = "grafana/alloy"
+# use_latest_release = true
+# prefix = "v"

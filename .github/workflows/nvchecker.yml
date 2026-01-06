@@ -7,8 +7,6 @@ on:
 
 env:
   NVCHECKER_SOURCES_FILE: 'sources.toml'
-  NVCHECKER_FAILURES_FILE: '.github/nvchecker_failures.json'
-  NVCHECKER_FAILURES_THRESHOLD: 3
 
 jobs:
   main:
@@ -19,19 +17,33 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Install system dependencies
+        run: |
+          set -e
+          sudo apt-get update
+          sudo apt-get install -y \
+            python3-pip \
+            jq \
+            yq \
+            git \
+            curl
+
+      - name: Install nvchecker
+        run: |
+          set -e
+          pip3 install --upgrade nvchecker
+
       - name: Set up variables
         id: vars
         run: |
-          set -x
-          set -e
+          set -eux
           echo "keyfile=$(yq -r '.__config__.keyfile' '${{ env.NVCHECKER_SOURCES_FILE }}')" >> "${GITHUB_OUTPUT}"
           echo "newver=$(yq -r '.__config__.newver' '${{ env.NVCHECKER_SOURCES_FILE }}')" >> "${GITHUB_OUTPUT}"
           echo "oldver=$(yq -r '.__config__.oldver' '${{ env.NVCHECKER_SOURCES_FILE }}')" >> "${GITHUB_OUTPUT}"
 
       - name: Set up keys file
         run: |
-          set -x
-          set -e
+          set -eux
           if [ -n '${{ steps.vars.outputs.keyfile }}' ] && [ -f '${{ steps.vars.outputs.keyfile }}' ]
           then
             echo '::warning::A nvchecker key file already resides in this repository!'
@@ -47,261 +59,83 @@ jobs:
             echo '::warning::GitHub Secret for GitHub API key is not set up!'
           fi
 
-      - name: Pull nvchecker container
-        run: docker pull ghcr.io/guihkx/nvchecker
-
       - name: Run nvchecker
-        run: docker run --rm -v .:/data -t ghcr.io/guihkx/nvchecker --file '${{ env.NVCHECKER_SOURCES_FILE }}' --tries 5
+        run: |
+          set -e
+          nvchecker --failures --file '${{ env.NVCHECKER_SOURCES_FILE }}'
 
-      - name: Restore or save failure counters cache
-        uses: actions/cache@v4
-        with:
-          key: nvchecker-failure-counters-${{ github.run_id }}
-          path: ${{ env.NVCHECKER_FAILURES_FILE }}
-          restore-keys: |
-            nvchecker-failure-counters
-
-      - name: Determine if there are updates
+      - name: Determine updates
         id: results
         run: |
-          set -x
-          set -e
-          if cmp -s '${{ steps.vars.outputs.oldver }}' '${{ steps.vars.outputs.newver }}'
-          then
+          set -eux
+          if cmp -s '${{ steps.vars.outputs.oldver }}' '${{ steps.vars.outputs.newver }}'; then
             echo '::notice::No updates were found.'
             exit 0
           fi
-          declare -A old_entries
-          eval "$(yq -r $".data[] | \"old_entries['\(key)']='\(.version)'\"" '${{ steps.vars.outputs.oldver }}')"
-          declare -A new_entries
-          eval "$(yq -r $".data[] | \"new_entries['\(key)']='\(.version)'\"" '${{ steps.vars.outputs.newver }}')"
-          outdated_entries=()
-          failing_entries=()
-          for entry in "${!old_entries[@]}"
-          do
-            if [ -z "${new_entries[$entry]}" ]
-            then
-              failing_entries+=("${entry}")
-            elif [ "${old_entries[$entry]}" != "${new_entries[$entry]}" ]
-            then
-              outdated_entries+=("${entry}")
-            fi
-          done
-          echo "failing_entries_json=$(jq -cn '$ARGS.positional' --args -- "${failing_entries[@]}")" >> "${GITHUB_OUTPUT}"
-          echo "failing_entries_total=${#failing_entries[@]}" >> "${GITHUB_OUTPUT}"
-          echo "outdated_entries_json=$(jq -cn '$ARGS.positional' --args -- "${outdated_entries[@]}")" >> "${GITHUB_OUTPUT}"
-          echo "outdated_entries_total=${#outdated_entries[@]}" >> "${GITHUB_OUTPUT}"
 
-      - name: Check for failing entries and update failure counters file
-        id: failure-threshold
-        run: |
-          set -e
-          set -x
-          if [ ! -f '${{ env.NVCHECKER_FAILURES_FILE }}' ]
-          then
-            mkdir -p "$(dirname '${{ env.NVCHECKER_FAILURES_FILE }}')"
-            echo '{}' > '${{ env.NVCHECKER_FAILURES_FILE }}'
-          fi
-
-          echo 'Previous failures:'
-          cat '${{ env.NVCHECKER_FAILURES_FILE }}'
-
-          failing_entries=()
-          if [ '${{ steps.results.outputs.failing_entries_total }}' -gt 0 ]
-          then
-            mapfile -t failing_entries < <(jq -r '.[]' <<< '${{ steps.results.outputs.failing_entries_json }}')
-          fi
-
-          entries_to_report=()
-          for entry in "${failing_entries[@]}"
-          do
-            failures_count=$(jq -r ".\"${entry}\" // 0" '${{ env.NVCHECKER_FAILURES_FILE }}')
-            failures_count=$((failures_count + 1))
-            jq ".\"${entry}\" = ${failures_count}" '${{ env.NVCHECKER_FAILURES_FILE }}' > tmp && mv tmp '${{ env.NVCHECKER_FAILURES_FILE }}'
-            if [ "${failures_count}" -ge '${{ env.NVCHECKER_FAILURES_THRESHOLD }}' ]
-            then
-              entries_to_report+=("${entry}")
-            fi
-          done
-
-          mapfile -t all_tracked < <(jq -r 'keys[]' '${{ env.NVCHECKER_FAILURES_FILE }}')
-          for tracked in "${all_tracked[@]}"
-          do
-            reset=true
-            for fail in "${failing_entries[@]}"
-            do
-              if [ "${fail}" == "${tracked}" ]
-              then
-                reset=false
-                break
-              fi
-            done
-            if [ "${reset}" == true ]
-            then
-              jq "del(.\"${tracked}\")" '${{ env.NVCHECKER_FAILURES_FILE }}' > tmp && mv tmp '${{ env.NVCHECKER_FAILURES_FILE }}'
-            fi
-          done
-
-          echo 'New failures:'
-          cat '${{ env.NVCHECKER_FAILURES_FILE }}'
-
-          echo "entries_to_report_json=$(jq -cn '$ARGS.positional' --args -- "${entries_to_report[@]}")" >> "${GITHUB_OUTPUT}"
-          echo "entries_to_report_total=${#entries_to_report[@]}" >> "${GITHUB_OUTPUT}"
+          outdated=$(jq -c --argfile old ${{ steps.vars.outputs.oldver }} --argfile new ${{ steps.vars.outputs.newver }} \
+            '.data | to_entries | map(select(.value.version != $old.data[.key].version)) | map(.key)')
+          
+          echo "outdated_entries_json=$outdated" >> $GITHUB_OUTPUT
+          echo "outdated_count=$(echo $outdated | jq 'length')" >> $GITHUB_OUTPUT
 
       - name: Configure git
-        if: steps.results.outputs.outdated_entries_total > 0 || steps.failure-threshold.outputs.entries_to_report_total > 0
+        if: steps.results.outputs.outdated_count > 0
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
 
-      - name: Create pull request for outdated entries
-        if: steps.results.outputs.outdated_entries_total > 0
+      - name: Create Individual Pull Requests
+        if: steps.results.outputs.outdated_count > 0
         run: |
-          set -x
-          set -e
-          git_username=$(git config user.name)
-          git_email=$(git config user.email)
+          set -eux
+          # Temporarily store the new versions to read from while we reset the workspace for branches
+          cp '${{ steps.vars.outputs.newver }}' 'newver_temp.json'
+          
+          # Iterate through each outdated entry
+          echo '${{ steps.results.outputs.outdated_entries_json }}' | jq -r '.[]' | while read -r entry; do
+            old_version=$(jq -r ".data[\"$entry\"].version" '${{ steps.vars.outputs.oldver }}')
+            new_version=$(jq -r ".data[\"$entry\"].version" 'newver_temp.json')
+            release_url=$(jq -r ".data[\"$entry\"].url // empty" 'newver_temp.json')
+            
+            branch_name="update-${entry}-${new_version}"
+            
+            # 1. Check if PR or Branch already exists to avoid spam
+            if git ls-remote --heads origin "$branch_name" | grep -q "$branch_name"; then
+              echo "Branch $branch_name already exists. Skipping."
+              continue
+            fi
 
-          # Check if there is a PR already opened by 'us'. If there is, abort with no error.
-          if ! res=$(curl --fail \
-            --silent \
-            --show-error \
-            --location \
-            --retry 5 \
-            --get \
-            --data-urlencode 'state=open' \
-            --header 'Accept: application/vnd.github+json' \
-            --header 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
-            --header 'X-GitHub-Api-Version: 2022-11-28' \
-            https://api.github.com/repos/${{ github.repository }}/pulls)
-          then
-            echo '::error::Failed to check for open pull requests using the GitHub API.'
-            exit 1
-          fi
-
-          n_prs=$(yq -r $"[.[].user.login | select(. == \"${git_username}\")] | length" <<< "${res}")
-
-          if [ "${n_prs}" -gt 0 ]
-          then
-            echo '::warning::A pull request is already open, refusing to open a new one.'
-            exit 0
-          fi
-
-          # Prepare PR.
-          if [ '${{ steps.results.outputs.outdated_entries_total }}' -gt 1 ]
-          then
-            pr_body='This PR updates ${{ steps.results.outputs.outdated_entries_total }} nvchecker entries from `${{ env.NVCHECKER_SOURCES_FILE }}`:\n\n'
-          else
-            pr_body='This PR updates a single nvchecker entry from `${{ env.NVCHECKER_SOURCES_FILE }}`:\n\n'
-          fi
-
-          cp -v '${{ steps.vars.outputs.newver }}' '${{ steps.vars.outputs.newver }}~'
-          git restore '${{ steps.vars.outputs.newver }}'
-          branch="nvchecker-$(openssl rand -hex 4)"
-          git checkout -b "${branch}"
-          for entry in $(yq -r '.[]' <<< '${{ steps.results.outputs.outdated_entries_json }}')
-          do
-            oldver=$(yq -r $".data.[\"${entry}\"].version" '${{ steps.vars.outputs.oldver }}')
-            newver=$(yq -r $".data.[\"${entry}\"].version" '${{ steps.vars.outputs.newver }}~')
-            yq -i $".data.[\"${entry}\"].version = \"${newver}\"" '${{ steps.vars.outputs.oldver }}'
-            yq -i $".data.[\"${entry}\"].version = \"${newver}\"" '${{ steps.vars.outputs.newver }}'
+            # 2. Create Branch and Commit
+            git switch main
+            git switch -c "$branch_name"
+            
+            # Update the specific entry in oldver and newver files
+            jq ".data[\"$entry\"].version = \"$new_version\"" '${{ steps.vars.outputs.oldver }}' > tmp.json && mv tmp.json '${{ steps.vars.outputs.oldver }}'
+            jq ".data[\"$entry\"].version = \"$new_version\"" '${{ steps.vars.outputs.newver }}' > tmp.json && mv tmp.json '${{ steps.vars.outputs.newver }}'
+            
             git add '${{ steps.vars.outputs.oldver }}' '${{ steps.vars.outputs.newver }}'
-            git commit -m "nvchecker: ${entry} ${oldver} -> ${newver}"
-            pr_body+=$"- ${entry}: \`${oldver}\` -> \`${newver}\`\n"
+            git commit -m "update($entry): $old_version -> $new_version"
+            git push origin "$branch_name"
+
+            # 3. Prepare PR Body
+            pr_body="Automated update for **$entry** from \`$old_version\` to \`$new_version\`."
+            if [ -n "$release_url" ]; then
+              pr_body="$pr_body\n\n**Release URL:** $release_url"
+            fi
+
+            # 4. Create PR via API
+            curl -s -X POST \
+              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              -H "Accept: application/vnd.github+json" \
+              https://api.github.com/repos/${{ github.repository }}/pulls \
+              -d "$(jq -n \
+                --arg title "nvchecker: $entry $new_version" \
+                --arg body "$pr_body" \
+                --arg head "$branch_name" \
+                --arg base "main" \
+                '{title: $title, body: $body, head: $head, base: $base}')"
+            
+            # Return to main for the next iteration
+            git checkout main
           done
-          pr_body+='\n---\n*This pull request was automatically generated by '
-          pr_body+='[this GitHub Actions run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}).*'
-          git --no-pager log -n${{ steps.results.outputs.outdated_entries_total }}
-          git push -u origin "${branch}"
-
-          if [ '${{ steps.results.outputs.outdated_entries_total }}' -gt 1 ]
-          then
-            pr_title='nvchecker: Update ${{ steps.results.outputs.outdated_entries_total }} entries'
-          else
-            pr_title=$"nvchecker: ${entry} \`${oldver}\` -> \`${newver}\`"
-          fi
-
-          if ! curl --fail \
-            --silent \
-            --show-error \
-            --location \
-            --retry 5 \
-            --header 'Accept: application/vnd.github+json' \
-            --header 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
-            --header 'X-GitHub-Api-Version: 2022-11-28' \
-            --data $"{\"title\":\"${pr_title}\",\"body\":\"${pr_body}\",\"head\":\"${{ github.actor }}:${branch}\",\"base\":\"${{ github.head_ref || github.ref_name }}\"}" \
-            https://api.github.com/repos/${{ github.repository }}/pulls
-          then
-            echo '::error::Failed to create a pull request using the GitHub API.'
-            # Delete created branch.
-            git push origin ":${branch}"
-            exit 1
-          fi
-          echo '::notice::A pull request for outdated entries was created successfully!'
-
-      - name: Create issue for failing entries
-        if: steps.failure-threshold.outputs.entries_to_report_total > 0
-        run: |
-          set -e
-          set -x
-          git_username=$(git config user.name)
-
-          # Check if there is an issue already opened by 'us'. If there is, abort with no error.
-          if ! res=$(curl --fail \
-            --silent \
-            --show-error \
-            --location \
-            --retry 5 \
-            --get \
-            --data-urlencode 'state=open' \
-            --header 'Accept: application/vnd.github+json' \
-            --header 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
-            --header 'X-GitHub-Api-Version: 2022-11-28' \
-            https://api.github.com/repos/${{ github.repository }}/issues)
-          then
-            echo '::error::Failed to check for open issues using the GitHub API.'
-            exit 1
-          fi
-
-          n_issues=$(yq -r $"[.[] | select(.user.login == \"${git_username}\" and .node_id == \"I_*\")] | length" <<< "${res}")
-
-          if [ "${n_issues}" -gt 0 ]
-          then
-            echo '::warning::An issue is already open, refusing to open a new one.'
-            exit 0
-          fi
-
-          if [ '${{ steps.results.outputs.failing_entries_total }}' -gt 1 ]
-          then
-            issue_title='nvchecker: ${{ steps.results.outputs.failing_entries_total }} entries are failing consecutively'
-            issue_body='The following ${{ steps.results.outputs.failing_entries_total }} nvchecker entries from `${{ env.NVCHECKER_SOURCES_FILE }}` '
-            issue_body+='have failed ${{ env.NVCHECKER_FAILURES_THRESHOLD }} consecutive times:\n\n'
-          else
-            entry=$(jq -r '.[0]' <<< '${{ steps.failure-threshold.outputs.entries_to_report_json }}')
-            issue_title="nvchecker: The ${entry} entry is failing consecutively"
-            issue_body='The following nvchecker entry from `${{ env.NVCHECKER_SOURCES_FILE }}` '
-            issue_body+='has failed ${{ env.NVCHECKER_FAILURES_THRESHOLD }} consecutive times:\n\n'
-          fi
-
-          for entry in $(jq -r '.[]' <<< '${{ steps.failure-threshold.outputs.entries_to_report_json }}')
-          do
-            issue_body+=$"- ${entry}\n"
-          done
-          issue_body+='\n---\n*This issue was automatically generated by '
-          issue_body+='[this GitHub Actions run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}).*'
-
-          if ! curl --fail \
-            --silent \
-            --show-error \
-            --location \
-            --retry 5 \
-            --header 'Accept: application/vnd.github+json' \
-            --header 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
-            --header 'X-GitHub-Api-Version: 2022-11-28' \
-            --data $"{\"title\":\"${issue_title}\",\"body\":\"${issue_body}\"}" \
-            https://api.github.com/repos/${{ github.repository }}/issues
-          then
-            echo '::error::Failed to open an issue for failing entries using the GitHub API.'
-            exit 1
-          fi
-          echo '::warning::An issue for failing entries was opened successfully!'
