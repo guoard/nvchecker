@@ -107,9 +107,9 @@ jobs:
             fi
 
             # 2. Create Branch and Commit
-            git switch main
+            git switch master
             git switch -c "$branch_name"
-            
+
             # Update the specific entry in oldver and newver files
             jq ".data[\"$entry\"].version = \"$new_version\"" '${{ steps.vars.outputs.oldver }}' > tmp.json && mv tmp.json '${{ steps.vars.outputs.oldver }}'
             jq ".data[\"$entry\"].version = \"$new_version\"" '${{ steps.vars.outputs.newver }}' > tmp.json && mv tmp.json '${{ steps.vars.outputs.newver }}'
