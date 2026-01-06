@@ -72,7 +72,7 @@ jobs:
             exit 0
           fi
 
-          outdated=$(jq --raw-output --monochrome-output --argjson old "$(<${{ steps.vars.outputs.oldver }})" \
+          outdated=$(jq --compact-output --raw-output --monochrome-output --argjson old "$(<${{ steps.vars.outputs.oldver }})" \
             '.data | to_entries | map(select(.value.version != $old.data[.key].version)) | map(.key)' \
             ${{ steps.vars.outputs.newver }})
 
