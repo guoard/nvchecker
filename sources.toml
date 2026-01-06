@@ -1,7 +1,7 @@
 [__config__]
 oldver = "old.json"
 newver = "new.json"
-# keyfile = "keys.toml"
+keyfile = "keys.toml"
 
 # ["golang1.25"]
 # source = "container"
