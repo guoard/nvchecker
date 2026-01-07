@@ -89,7 +89,7 @@ jobs:
             branch_name="update-${entry}-${new_version}"
 
             if git ls-remote --heads origin "$branch_name" | grep -q "$branch_name"; then
-              echo '::warning::Branch $branch_name already exists. Skipping.'
+              echo "::warning::Branch $branch_name already exists. Skipping."
               continue
             fi
 
@@ -97,9 +97,21 @@ jobs:
             git switch --create "$branch_name"
 
             # Update the specific entry in oldver file
-            jq --argjson obj "$(jq ".data[\"$entry\"]" "${{ steps.vars.outputs.newver }}")" \
-              ".data[\"$entry\"] = \$obj" \
-              "${{ steps.vars.outputs.oldver }}" > tmp.json \
+            jq \
+              --arg entry "$entry" \
+              --argjson newdata "$(jq '.data' "${{ steps.vars.outputs.newver }}")" \
+              '
+              .data as $old
+              | .data =
+                reduce ($newdata | keys_unsorted[]) as $k
+                  ({}; .[$k] =
+                    if $k == $entry then
+                      $newdata[$k]
+                    else
+                      ($old[$k] // $newdata[$k])
+                    end
+                  )
+              ' "${{ steps.vars.outputs.oldver }}" > tmp.json \
             && mv tmp.json "${{ steps.vars.outputs.oldver }}"
 
             git add '${{ steps.vars.outputs.oldver }}'
