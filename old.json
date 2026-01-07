@@ -1,6 +1,11 @@
 {
   "version": 2,
   "data": {
+    "alloy": {
+      "version": "1.12.1",
+      "gitref": "refs/tags/v1.12.1",
+      "url": "https://github.com/grafana/alloy/releases/tag/v1.12.1"
+    },
     "envoy": {
       "version": "1.36.3",
       "gitref": "refs/tags/v1.36.3",
@@ -15,9 +20,9 @@
       "version": "2.3.1-amd64"
     },
     "node_exporter": {
-      "version": "v1.10.1",
-      "gitref": "refs/tags/v1.10.1",
-      "url": "https://github.com/prometheus/node_exporter/releases/tag/v1.10.1"
+      "version": "v1.10.2",
+      "gitref": "refs/tags/v1.10.2",
+      "url": "https://github.com/prometheus/node_exporter/releases/tag/v1.10.2"
     }
   }
 }
