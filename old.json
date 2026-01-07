@@ -15,9 +15,9 @@
       "version": "2.3.1-amd64"
     },
     "node_exporter": {
-      "version": "v1.10.1",
-      "gitref": "refs/tags/v1.10.1",
-      "url": "https://github.com/prometheus/node_exporter/releases/tag/v1.10.1"
+      "version": "v1.10.2",
+      "gitref": "refs/tags/v1.10.2",
+      "url": "https://github.com/prometheus/node_exporter/releases/tag/v1.10.2"
     }
   }
 }
