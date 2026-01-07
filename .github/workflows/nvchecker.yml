@@ -97,22 +97,7 @@ jobs:
             git switch --create "$branch_name"
 
             # Update the specific entry in oldver file
-            jq \
-              --arg entry "$entry" \
-              --argjson newdata "$(jq '.data' "${{ steps.vars.outputs.newver }}")" \
-              '
-              .data as $old
-              | .data =
-                reduce ($newdata | keys_unsorted[]) as $k
-                  ({}; .[$k] =
-                    if $k == $entry then
-                      $newdata[$k]
-                    else
-                      ($old[$k] // $newdata[$k])
-                    end
-                  )
-              ' "${{ steps.vars.outputs.oldver }}" > tmp.json \
-            && mv tmp.json "${{ steps.vars.outputs.oldver }}"
+            nvtake --file "${{ env.NVCHECKER_SOURCES_FILE }}" "$entry"
 
             git add '${{ steps.vars.outputs.oldver }}'
             git commit -m "nvchecker: $entry $old_version -> $new_version"
