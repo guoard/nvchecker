@@ -62,9 +62,7 @@ jobs:
             exit 0
           fi
 
-          outdated=$(jq --compact-output --raw-output --monochrome-output --argjson old "$(<${{ steps.vars.outputs.oldver }})" \
-            '.data | to_entries | map(select(.value.version != $old.data[.key].version)) | map(.key)' \
-            ${{ steps.vars.outputs.newver }})
+          outdated=$(nvcmp --quiet --json --file "${{ env.NVCHECKER_SOURCES_FILE }}")
 
           echo "outdated_entries_json=$outdated" >> $GITHUB_OUTPUT
           echo "outdated_count=$(echo $outdated | jq 'length')" >> $GITHUB_OUTPUT
