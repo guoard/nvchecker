@@ -12,7 +12,7 @@
       "url": "https://github.com/envoyproxy/gateway/releases/tag/v1.6.1"
     },
     "n8n": {
-      "version": "2.3.1-amd64"
+      "version": "2.5.2-amd64"
     },
     "node_exporter": {
       "version": "v1.10.1",
