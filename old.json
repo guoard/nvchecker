@@ -7,9 +7,9 @@
       "url": "https://github.com/envoyproxy/envoy/releases/tag/v1.36.3"
     },
     "envoy_gateway": {
-      "version": "1.6.1",
-      "gitref": "refs/tags/v1.6.1",
-      "url": "https://github.com/envoyproxy/gateway/releases/tag/v1.6.1"
+      "version": "1.6.3",
+      "gitref": "refs/tags/v1.6.3",
+      "url": "https://github.com/envoyproxy/gateway/releases/tag/v1.6.3"
     },
     "n8n": {
       "version": "2.5.1-amd64"
