@@ -62,8 +62,8 @@ while read -r name oldver delta newver; do
             '{
                 title: $title,
                 body: $body,
-                base: $source_branch,
-                head: $target_branch,
+                base: $target_branch,
+                head: $source_branch,
                 maintainer_can_modify: false,
             }')" \
         "https://api.github.com/repos/$GITHUB_REPOSITORY/pulls"
