@@ -7,3 +7,9 @@ source = "github"
 github = "atuinsh/atuin"
 use_latest_release = true
 prefix = "v"
+
+[grafana]
+source = "github"
+github = "grafana/grafana"
+use_latest_release = true
+prefix = "v"
