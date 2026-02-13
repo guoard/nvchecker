@@ -1,0 +1,9 @@
+[__config__]
+oldver = "old.json"
+newver = "new.json"
+
+[atuin]
+source = "github"
+github = "atuinsh/atuin"
+use_latest_release = true
+prefix = "v"

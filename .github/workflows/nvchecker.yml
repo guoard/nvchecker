@@ -1,0 +1,23 @@
+name: nvchecker
+
+on:
+  schedule:
+    - cron: "0 7 * * *"
+  workflow_dispatch:
+
+jobs:
+  main:
+    name: Check
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Install nvchecker
+        run: |
+          set -e
+          pip3 install --upgrade nvchecker
+
+      - name: Run nvchecker
+        run: ./nvchecker.sh
