@@ -21,3 +21,5 @@ jobs:
 
       - name: Run nvchecker
         run: ./nvchecker.sh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
