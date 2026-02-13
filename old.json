@@ -5,6 +5,11 @@
       "version": "18.12.1",
       "gitref": "refs/tags/v18.12.1",
       "url": "https://github.com/atuinsh/atuin/releases/tag/v18.12.1"
+    },
+    "grafana": {
+      "version": "12.3.2+security-01",
+      "gitref": "refs/tags/v12.3.2+security-01",
+      "url": "https://github.com/grafana/grafana/releases/tag/v12.3.2%2Bsecurity-01"
     }
   }
 }
