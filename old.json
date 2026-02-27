@@ -7,9 +7,9 @@
       "url": "https://github.com/atuinsh/atuin/releases/tag/v18.12.1"
     },
     "grafana": {
-      "version": "12.3.2+security-01",
-      "gitref": "refs/tags/v12.3.2+security-01",
-      "url": "https://github.com/grafana/grafana/releases/tag/v12.3.2%2Bsecurity-01"
+      "version": "12.4.0",
+      "gitref": "refs/tags/v12.4.0",
+      "url": "https://github.com/grafana/grafana/releases/tag/v12.4.0"
     }
   }
 }
