@@ -4,12 +4,14 @@
     "atuin": {
       "version": "18.19.0",
       "gitref": "refs/tags/v18.19.0",
-      "url": "https://github.com/atuinsh/atuin/releases/tag/v18.19.0"
+      "url": "https://github.com/atuinsh/atuin/releases/tag/v18.19.0",
+      "creation_time": "2026-08-03T23:26:10Z"
     },
     "hiddify": {
       "version": "4.1.1",
       "gitref": "refs/tags/v4.1.1",
-      "url": "https://github.com/hiddify/hiddify-app/releases/tag/v4.1.1"
+      "url": "https://github.com/hiddify/hiddify-app/releases/tag/v4.1.1",
+      "creation_time": "2026-03-05T17:22:57Z"
     }
   }
 }
