@@ -5,8 +5,11 @@ set -Eeuxo pipefail
 oldver_file=old.json
 newver_file=new.json
 source_file=sources.toml
+key_file=keys.toml
 
-nvchecker --failures --tries 5 --file "$source_file"
+printf '[keys]\ngithub = "%s"\n' "$GITHUB_TOKEN" > "$key_file"
+
+nvchecker --failures --tries 5 --file "$source_file" --keyfile "$key_file"
 
 # Exit early if no changes
 if cmp --quiet "$oldver_file" "$newver_file"; then
