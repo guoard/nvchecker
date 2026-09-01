@@ -2,10 +2,10 @@
   "version": 2,
   "data": {
     "atuin": {
-      "version": "18.20.1",
-      "gitref": "refs/tags/v18.20.1",
-      "url": "https://github.com/atuinsh/atuin/releases/tag/v18.20.1",
-      "creation_time": "2026-08-27T00:56:58Z"
+      "version": "18.21.0",
+      "gitref": "refs/tags/v18.21.0",
+      "url": "https://github.com/atuinsh/atuin/releases/tag/v18.21.0",
+      "creation_time": "2026-08-31T23:19:17Z"
     },
     "hiddify": {
       "version": "4.1.1",
