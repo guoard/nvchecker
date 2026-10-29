@@ -27,14 +27,13 @@ while read -r name oldver delta newver; do
 
     branch_name="update-${name}-${newver}"
 
-    # Skip if branch already exists
+    branch_exists=false
     if git ls-remote --heads origin "$branch_name" | grep -q "$branch_name"; then
-        echo "::warning::Branch $branch_name already exists. Skipping."
-        continue
+        branch_exists=true
     fi
 
     git switch "$GITHUB_REF_NAME"
-    git switch --create "$branch_name"
+    git switch --force-create "$branch_name"
 
     # Update the specific entry in oldver file
     nvtake --file "$source_file" "$name"
@@ -42,7 +41,12 @@ while read -r name oldver delta newver; do
     git add "$oldver_file"
     commit_message="nvchecker: $name $oldver $delta $newver"
     git commit --message "$commit_message"
-    git push --set-upstream origin "$branch_name"
+    git push --force --set-upstream origin "$branch_name"
+
+    if [ "$branch_exists" = true ]; then
+        echo "::notice::Branch $branch_name already exists, refreshed onto $GITHUB_REF_NAME."
+        continue
+    fi
 
     # Merge request body
     pr_body="$name: \`$oldver\` $delta \`$newver\`"
@@ -75,4 +79,14 @@ while read -r name oldver delta newver; do
         git push origin --delete "$branch_name"
         exit 1
     fi
+
+    # Delete superseded update branches of this package
+    old_branches=$(git ls-remote --heads origin "update-${name}-*" | awk '{print $2}' | sed 's#refs/heads/##' | grep -Fxv "$branch_name" || true)
+    for old_branch in $old_branches; do
+        git fetch --depth=1 origin "$old_branch"
+        subject="$(git log -1 --format=%s FETCH_HEAD)"
+        if [[ "$subject" == "nvchecker: $name "* ]]; then
+            git push origin --delete "$old_branch"
+        fi
+    done
 done <<< "$outdated"
