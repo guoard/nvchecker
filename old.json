@@ -8,10 +8,10 @@
       "creation_time": "2026-11-04T02:37:00Z"
     },
     "hiddify": {
-      "version": "4.1.1",
-      "gitref": "refs/tags/v4.1.1",
-      "url": "https://github.com/hiddify/hiddify-app/releases/tag/v4.1.1",
-      "creation_time": "2026-03-05T17:22:57Z"
+      "version": "5.5.5",
+      "gitref": "refs/tags/v5.5.5",
+      "url": "https://github.com/hiddify/hiddify-app/releases/tag/v5.5.5",
+      "creation_time": "2026-11-04T21:06:14Z"
     }
   }
 }
